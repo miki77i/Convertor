@@ -34,6 +34,22 @@ def add_string_child(text_code : list[str]) -> list[str]:
     return processing_str_code(new_code)
 
 
+def convert_to_Pascal(code):
+    '''Функция конвертации кода в Pascal'''
+    if isinstance(code, ast.Module):
+        return '\n'.join([convert_to_Pascal(i) for i in code.body]) 
+
+    elif isinstance(code, ast.Assign):
+        targets = ''.join([convert_to_Pascal(i) for i in code.targets])
+        value = convert_to_Pascal(code.value)
+        Structure_dct[targets] = type(value)
+        return f'{targets} := {value}'
+
+    elif isinstance(code, ast.Name):
+        return code.id
+    
+    elif isinstance(code, ast.Constant):
+        return code.value
 
 # Считывание строк кода с файла
 with open('file.py', 'r+') as file:
@@ -41,7 +57,11 @@ with open('file.py', 'r+') as file:
 
 # Преобразование строк кода в блоки
 new_code = add_string_child(code_file)
-print(new_code)
+# print(new_code)
 
-for i in new_code:
-    print(ast.dump(ast.parse(i), indent=4))
+# for i in new_code:
+#     print(ast.dump(ast.parse(i), indent=4))
+
+tree = ast.parse(new_code[0])
+print(ast.dump(tree))
+print(convert_to_Pascal(tree))
