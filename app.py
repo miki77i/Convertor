@@ -1,4 +1,5 @@
 import ast
+import astor
 
 #Словарь для определения структуры данных
 Structure_dct = {}
@@ -38,8 +39,9 @@ def add_string_child(text_code : list[str]) -> list[str]:
 with open('file.py', 'r+') as file:
     code_file = file.readlines()
 
-# Преобразование строк кодав блоки
+# Преобразование строк кода в блоки
 new_code = add_string_child(code_file)
 print(new_code)
 
-
+for i in new_code:
+    print(ast.dump(ast.parse(i), indent=4))
