@@ -42,10 +42,13 @@ def convert_to_Pascal(code):
     elif isinstance(code, ast.Assign):
         targets = ''.join([convert_to_Pascal(i) for i in code.targets])
         value = convert_to_Pascal(code.value)
-        Structure_dct[targets] = type(value)
-        return f'{targets} := {value}'
+        if value == 'input':
+            return f'Readln({targets});'
+        else:
+            Structure_dct[targets] = type(value)
+            return f'{targets} := {value};'
 
-    
+    # Конвертация For
     elif isinstance(code, ast.For):
         # Переменные цикла
         target = convert_to_Pascal(code.target)
@@ -57,11 +60,14 @@ def convert_to_Pascal(code):
         body = '\n{\n' + elements + '\n}\n'
         return f'for {target} := {start} to {stop} do' + body
 
+    # Конвертация If
+    elif isinstance(code, ast.If):
+        pass
 
     elif isinstance(code, ast.Expr):
         # Перевод print - writeln
         elem = convert_to_Pascal(code.value)
-        return f'Writeln({elem})'
+        return f'Writeln({elem});'
 
 
     elif isinstance(code, ast.Call):
@@ -74,6 +80,12 @@ def convert_to_Pascal(code):
 
         elif func == 'print':
             return ', '.join([f'"{convert_to_Pascal(arg)}"' for arg in code.args])
+        
+        elif func == 'input':
+            return 'input'
+        
+    elif isinstance(code, ast.BinOp):
+        pass
         
     # Получение базового элемента названия переменной =
     elif isinstance(code, ast.Name):
@@ -90,12 +102,9 @@ with open('file.py', 'r+') as file:
 # Преобразование строк кода в блоки
 new_code = add_string_child(code_file)
 # print(new_code)
-
-# for i in new_code:
-#     print(ast.dump(ast.parse(i), indent=4))
-
-tree = ast.parse(new_code[2])
-# print(ast.dump(tree, indent=5))
-print(convert_to_Pascal(tree))
+# for i in range(4):
+tree = ast.parse(new_code[1])
+print(ast.dump(tree, indent=5))
+# print(convert_to_Pascal(tree))
 
 # print(Structure_dct)
