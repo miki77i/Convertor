@@ -45,9 +45,41 @@ def convert_to_Pascal(code):
         Structure_dct[targets] = type(value)
         return f'{targets} := {value}'
 
+    
+    elif isinstance(code, ast.For):
+        # Переменные цикла
+        target = convert_to_Pascal(code.target)
+        start, stop = convert_to_Pascal(code.iter)
+        Structure_dct[target] = type(start)
+
+        # Тело цикла
+        elements = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
+        body = '\n{\n' + elements + '\n}\n'
+        return f'for {target} := {start} to {stop} do' + body
+
+
+    elif isinstance(code, ast.Expr):
+        # Перевод print - writeln
+        elem = convert_to_Pascal(code.value)
+        return f'Writeln({elem})'
+
+
+    elif isinstance(code, ast.Call):
+        # Определение функции
+        func = convert_to_Pascal(code.func)
+
+
+        if func == 'range':
+            return [convert_to_Pascal(arg) for arg in code.args]
+
+        elif func == 'print':
+            return ', '.join([f'"{convert_to_Pascal(arg)}"' for arg in code.args])
+        
+    # Получение базового элемента названия переменной =
     elif isinstance(code, ast.Name):
         return code.id
     
+    # Получение базового элемента константы
     elif isinstance(code, ast.Constant):
         return code.value
 
@@ -62,6 +94,8 @@ new_code = add_string_child(code_file)
 # for i in new_code:
 #     print(ast.dump(ast.parse(i), indent=4))
 
-tree = ast.parse(new_code[0])
-print(ast.dump(tree))
+tree = ast.parse(new_code[2])
+# print(ast.dump(tree, indent=5))
 print(convert_to_Pascal(tree))
+
+# print(Structure_dct)
