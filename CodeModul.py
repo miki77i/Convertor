@@ -7,7 +7,7 @@ def processing_str_code(code : list[str]):
     '''Функция для обработки строк кода'''
     new_code = []
     for i in range(len(code)):
-        if not(code[i] == '\n') and not('#' in code[i]):
+        if not(code[i] == '\n'):
             code[i] = code[i].replace('    ', '\t')
             new_code.append(code[i])
 
