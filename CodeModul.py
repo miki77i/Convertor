@@ -2,6 +2,9 @@ import ast
 
 #Словарь для определения структуры данных
 Structure_dct = {}
+comp_op = {ast.LtE: '<=', ast.Eq: '=='}
+bool_op = {ast.Or : 'Or', ast.And : 'And'}
+
 
 def processing_str_code(code : list[str]):
     '''Функция для обработки строк кода'''
@@ -73,7 +76,8 @@ def convert_to_Pascal(code):
 
     # Конвертация If
     elif isinstance(code, ast.If):
-        pass
+        test = convert_to_Pascal(code.test) 
+        return test
 
     elif isinstance(code, ast.Expr):
         # Перевод print - writeln
@@ -98,7 +102,19 @@ def convert_to_Pascal(code):
         else:
             return [convert_to_Pascal(arg) for arg in code.args]
         
+
+    elif isinstance(code, ast.BoolOp):
+        oper = bool_op[type(code.op)]
+        values = [convert_to_Pascal(elem) for elem in code.values]
+        return f'{values[0]} {oper} {values[1]}'
         
+    elif isinstance(code, ast.Compare):
+        left = convert_to_Pascal(code.left)
+        ops = comp_op[type(code.ops[0])]
+        right = convert_to_Pascal(code.comparators[0])
+        
+        return f'{left} {ops} {right}'
+
     # Получение базового элемента названия переменной =
     elif isinstance(code, ast.Name):
         return code.id

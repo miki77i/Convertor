@@ -10,7 +10,7 @@ print(x)
 
 name = input()
 
-if n <= x and n == 10 or x ==3: 
+if n <= x and n == 10 or x == 5: 
     pass
     # print('Hello')
     # print('qq')
