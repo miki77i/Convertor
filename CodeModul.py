@@ -2,8 +2,9 @@ import ast
 
 #Словарь для определения структуры данных
 Structure_dct = {}
-comp_op = {ast.LtE: '<=', ast.Eq: '=='}
+comp_op = {ast.Lt: "<", ast.Gt : '>', ast.GtE : '>=', ast.LtE: '<=', ast.Eq: '=', ast.NotEq: '<>'}
 bool_op = {ast.Or : 'Or', ast.And : 'And'}
+bin_op = {ast.Add: "+", ast.Sub: '-', ast.Mult: '*', ast.Div : '/', ast.FloorDiv : 'Div', ast.Mod: 'Mod'}
 
 
 def processing_str_code(code : list[str]):
@@ -24,7 +25,7 @@ def add_string_child(text_code : list[str]) -> list[str]:
     temp_line = text_code[0]
 
     for i in range(1, len(text_code)):
-        if not('    ' in text_code[i]) :
+        if not('    ' in text_code[i] or 'else' in text_code[i]):
             new_code.append(temp_line)
             temp_line = text_code[i]
         else:
@@ -62,7 +63,7 @@ def convert_to_Pascal(code):
 
         # Тело цикла
         elements = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
-        body = '\n{\n' + elements + '\n}\n'
+        body = '\nbegin\n' + elements + 'end\n'
 
         return f'for {target} := {start} to {stop} do' + body
 
@@ -70,14 +71,21 @@ def convert_to_Pascal(code):
     elif isinstance(code, ast.BinOp):
         left = convert_to_Pascal(code.left)
         right = convert_to_Pascal(code.right)
-        operation = convert_to_Pascal(code.op)
+        operation = bin_op.get(type(code.op), None)
         
         return f'{left} {operation} {right}'
 
     # Конвертация If
     elif isinstance(code, ast.If):
         test = convert_to_Pascal(code.test) 
-        return test
+        body = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
+        else_ = ''
+
+        if code.orelse != []:
+            else_ = '\n'.join([convert_to_Pascal(elem) for elem in code.orelse])
+            else_ = f'\nElse begin\n {else_} \nend' 
+        
+        return f'\nIf {test} then\n' + 'begin\n' + body + '\nend' + else_
 
     elif isinstance(code, ast.Expr):
         # Перевод print - writeln
@@ -122,21 +130,3 @@ def convert_to_Pascal(code):
     # Получение базового элемента константы
     elif isinstance(code, ast.Constant):
         return code.value
-    
-    elif isinstance(code, ast.Add):
-        return '+'
-    
-    elif isinstance(code, ast.Sub):
-        return '-'
-    
-    elif isinstance(code, ast.Mult):
-        return '*'
-    
-    elif isinstance(code, ast.Div):
-        return '/'
-    
-    elif isinstance(code, ast.FloorDiv):
-        return 'Div'
-    
-    elif isinstance(code, ast.Mod):
-        return 'Mod'
