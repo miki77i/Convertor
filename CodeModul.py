@@ -38,6 +38,9 @@ def add_string_child(text_code : list[str]) -> list[str]:
     return processing_str_code(new_code)
 
 
+# def create_array():
+
+
 def create_var() -> str:
     '''Функция для явного задания типа переменной на синтаксисе Pascal'''
     var_sp = []
@@ -45,7 +48,8 @@ def create_var() -> str:
         var_sp.append(f'{var} : {Var_type.get(type_, None)};')
 
     vars = '\n'.join(var_sp)
-    return f'Var\n{vars}\n'
+    return f'Var\n{vars}'
+
 
 def convert_to_Pascal(code):
     '''Функция конвертации кода в Pascal'''
@@ -60,6 +64,7 @@ def convert_to_Pascal(code):
 
         if value == 'input':
             return f'\nReadln({targets});'
+        
         else:
             Structure_dct[targets] = type(value)
             return f'\n{targets} := {value};'
@@ -73,7 +78,7 @@ def convert_to_Pascal(code):
 
         # Тело цикла
         elements = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
-        body = '\nbegin' + elements + 'end'
+        body = '\nbegin' + elements + '\nend'
 
         return f'\nfor {target} := {start} to {stop} do' + body
     
@@ -148,3 +153,17 @@ def convert_to_Pascal(code):
     # Получение базового элемента константы
     elif isinstance(code, ast.Constant):
         return code.value
+    
+
+def convert_code_line(new_code):
+    '''Функция для преобразования каждой строки в код pascal'''
+    code_lines = []
+
+    for i in range(len(new_code)):
+        tree = ast.parse(new_code[i])
+        print(ast.dump(tree, indent=5))
+        # code_lines.append(convert_to_Pascal(tree))
+    
+    vars = create_var()
+
+    print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")

@@ -14,15 +14,7 @@ new_code = CodeModul.add_string_child(code_file)
 
 # print(new_code)
 
-code_lines = []
 
-for i in range(len(new_code)):
-    tree = ast.parse(new_code[i])
-    # print(ast.dump(tree, indent=5))
-    code_lines.append(CodeModul.convert_to_Pascal(tree))
-
-vars = CodeModul.create_var()
-
-print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")
+print(CodeModul.convert_code_line(new_code))
 # print(Structure_dct)
 # print(CodeModul.Structure_dct)
