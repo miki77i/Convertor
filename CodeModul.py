@@ -5,6 +5,7 @@ Structure_dct = {}
 comp_op = {ast.Lt: "<", ast.Gt : '>', ast.GtE : '>=', ast.LtE: '<=', ast.Eq: '=', ast.NotEq: '<>'}
 bool_op = {ast.Or : 'Or', ast.And : 'And'}
 bin_op = {ast.Add: "+", ast.Sub: '-', ast.Mult: '*', ast.Div : '/', ast.FloorDiv : 'Div', ast.Mod: 'Mod'}
+Var_type = {int : 'Integer', float : 'Real', str : 'String', bool : 'Boolean'}
 
 
 def processing_str_code(code : list[str]):
@@ -37,6 +38,15 @@ def add_string_child(text_code : list[str]) -> list[str]:
     return processing_str_code(new_code)
 
 
+def create_var() -> str:
+    '''Функция для явного задания типа переменной на синтаксисе Pascal'''
+    var_sp = []
+    for var, type_ in Structure_dct.items():
+        var_sp.append(f'{var} : {Var_type.get(type_, None)};')
+
+    vars = '\n'.join(var_sp)
+    return f'Var\n{vars}\n'
+
 def convert_to_Pascal(code):
     '''Функция конвертации кода в Pascal'''
     if isinstance(code, ast.Module):
@@ -49,10 +59,10 @@ def convert_to_Pascal(code):
         value = convert_to_Pascal(code.value)
 
         if value == 'input':
-            return f'Readln({targets});'
+            return f'\nReadln({targets});'
         else:
             Structure_dct[targets] = type(value)
-            return f'{targets} := {value};'
+            return f'\n{targets} := {value};'
 
     # Конвертация For
     elif isinstance(code, ast.For):
@@ -63,17 +73,15 @@ def convert_to_Pascal(code):
 
         # Тело цикла
         elements = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
-        body = '\nbegin\n' + elements + 'end\n'
+        body = '\nbegin' + elements + 'end'
 
-        return f'for {target} := {start} to {stop} do' + body
-
-    # Математические операции
-    elif isinstance(code, ast.BinOp):
-        left = convert_to_Pascal(code.left)
-        right = convert_to_Pascal(code.right)
-        operation = bin_op.get(type(code.op), None)
-        
-        return f'{left} {operation} {right}'
+        return f'\nfor {target} := {start} to {stop} do' + body
+    
+    # Конвертация While
+    elif isinstance(code, ast.While):
+        test = convert_to_Pascal(code.test) 
+        body = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
+        return f'\nwhile {test} do \nbegin{body}\nend;\n'
 
     # Конвертация If
     elif isinstance(code, ast.If):
@@ -83,9 +91,19 @@ def convert_to_Pascal(code):
 
         if code.orelse != []:
             else_ = '\n'.join([convert_to_Pascal(elem) for elem in code.orelse])
-            else_ = f'\nElse begin\n {else_} \nend' 
+            else_ = f'\nElse begin {else_} \nend' 
         
-        return f'\nIf {test} then\n' + 'begin\n' + body + '\nend' + else_
+        return f'\nIf {test} then\n' + 'begin' + body + '\nend' + else_
+    
+
+    # Математические операции
+    elif isinstance(code, ast.BinOp):
+        left = convert_to_Pascal(code.left)
+        right = convert_to_Pascal(code.right)
+        operation = bin_op.get(type(code.op), None)
+        
+        return f'{left} {operation} {right}'
+
 
     elif isinstance(code, ast.Expr):
         # Перевод print - writeln
@@ -98,7 +116,7 @@ def convert_to_Pascal(code):
             else:
                 elems.append(f'"{i}"')
 
-        return f'Writeln({', '.join(elems)});'
+        return f'\nWriteln({', '.join(elems)});'
 
 
     elif isinstance(code, ast.Call):

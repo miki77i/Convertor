@@ -15,3 +15,7 @@ if n % 5 == 0:
         print(1)
     else:
         print(4)
+
+while x > 10:
+    n = n + 1
+    print(n)
