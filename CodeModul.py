@@ -2,10 +2,11 @@ import ast
 
 #Словарь для определения структуры данных
 Structure_dct = {}
+Array_struct = {}
 comp_op = {ast.Lt: "<", ast.Gt : '>', ast.GtE : '>=', ast.LtE: '<=', ast.Eq: '=', ast.NotEq: '<>'}
 bool_op = {ast.Or : 'Or', ast.And : 'And'}
 bin_op = {ast.Add: "+", ast.Sub: '-', ast.Mult: '*', ast.Div : '/', ast.FloorDiv : 'Div', ast.Mod: 'Mod'}
-Var_type = {int : 'Integer', float : 'Real', str : 'String', bool : 'Boolean'}
+Var_type = {int : 'Integer', float : 'Real', str : 'String', bool : 'Boolean', list : 'array'}
 
 
 def processing_str_code(code : list[str]):
@@ -45,7 +46,14 @@ def create_var() -> str:
     '''Функция для явного задания типа переменной на синтаксисе Pascal'''
     var_sp = []
     for var, type_ in Structure_dct.items():
-        var_sp.append(f'{var} : {Var_type.get(type_, None)};')
+
+        if type_ == list:
+            array_elems = Array_struct.get(var)
+            len_array = len(array_elems)
+            array_string = f'{var} : array [1..{len_array}] of {Var_type.get(type(array_elems[0]))} := ({','.join(map(str,array_elems))});'
+            var_sp.append(array_string)
+        else:
+            var_sp.append(f'{var} : {Var_type.get(type_, None)};')
 
     vars = '\n'.join(var_sp)
     return f'Var\n{vars}'
@@ -64,7 +72,10 @@ def convert_to_Pascal(code):
 
         if value == 'input':
             return f'\nReadln({targets});'
-        
+        elif type(value) == list:
+            Array_struct[targets] = value
+            Structure_dct[targets] = type(value)
+            return ''
         else:
             Structure_dct[targets] = type(value)
             return f'\n{targets} := {value};'
@@ -145,6 +156,10 @@ def convert_to_Pascal(code):
         right = convert_to_Pascal(code.comparators[0])
         
         return f'{left} {ops} {right}'
+    
+    elif isinstance(code, ast.List):
+        elems = [convert_to_Pascal(elem) for elem in code.elts]
+        return elems
 
     # Получение базового элемента названия переменной =
     elif isinstance(code, ast.Name):
@@ -161,8 +176,8 @@ def convert_code_line(new_code):
 
     for i in range(len(new_code)):
         tree = ast.parse(new_code[i])
-        print(ast.dump(tree, indent=5))
-        # code_lines.append(convert_to_Pascal(tree))
+        # print(ast.dump(tree, indent=5))
+        code_lines.append(convert_to_Pascal(tree))
     
     vars = create_var()
 

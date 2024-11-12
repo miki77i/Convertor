@@ -7,8 +7,6 @@ with open('file.py', 'r+') as file:
     code_file = file.readlines()
 
 
-# print(code_file)
-
 # Преобразование строк кода в блоки
 new_code = CodeModul.add_string_child(code_file)
 
