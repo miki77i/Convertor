@@ -144,6 +144,11 @@ def convert_to_Pascal(code):
         
         return f'\nIf {test} then\n' + 'begin' + body + '\nend' + else_
     
+    elif isinstance(code, ast.FunctionDef):
+        def_name = code.name
+        args = [convert_to_Pascal(arg) for arg in code.args]
+        body = convert_to_Pascal(code.body)
+        return f''
 
     # Математические операции
     elif isinstance(code, ast.BinOp):
@@ -190,9 +195,14 @@ def convert_to_Pascal(code):
         
         return f'{left} {ops} {right}'
     
+    #Получение списка элементов
     elif isinstance(code, ast.List):
         elems = [convert_to_Pascal(elem) for elem in code.elts]
         return elems
+
+    #Получение имени аргумента функции
+    elif isinstance(code, ast.arg):
+        return code.arg
 
     # Получение базового элемента названия переменной =
     elif isinstance(code, ast.Name):
@@ -210,9 +220,10 @@ def convert_code_line(new_code):
 
     for i in range(len(new_code)):
         tree = ast.parse(new_code[i])
-        print(ast.dump(tree, indent=5))
-        # code_lines.append(convert_to_Pascal(tree))
+        # print(ast.dump(tree, indent=5))
+        code_lines.append(convert_to_Pascal(tree))
     
     vars = create_var()
 
-    print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")
+    # print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")
+    return f"{vars} \nbegin\n {''.join(code_lines)} \nend."

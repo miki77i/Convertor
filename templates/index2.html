@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Конвертировать</title>
+</head>
+<body>
+    <h1 style="text-align: center;">Конвертация кода</h1>
+
+    <form method="POST">
+        <div class="maindiv">
+            <div class="block1">
+                <textarea name="text1" id="text1">{{text}}</textarea>
+            </div>
+        
+            <div class="block2">
+                <textarea name="text2" id="text2"> {{new_text}}</textarea>
+            </div>
+        </div>
+
+        <button type="submit">Конвертировать</button>
+    </form>
+
+</body>
+</html>
+
+<style>
+    @import "compass/css3";
+
+    * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+    html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1{
+        font-family: 'fulbo';
+        color: #F1F1F1;
+    }
+
+    body{
+        background: linear-gradient(70deg, #4613ff, #62a9ff);
+    }
+    .maindiv{
+        display: flex;
+        width: 100%;
+        height: 550px;
+    }
+
+    .block1, .block2{
+        margin-left: 10%;
+    }
+
+    textarea {
+        background-image: linear-gradient(#F1F1F1 50%, #F9F9F9 50%);
+        background-size: 100% 4rem;
+        border: 1px solid #CCC;
+        width: 500px;
+        height: 500px;
+        line-height: 2rem;
+        margin: 0 auto;
+        padding: 4px 8px;
+    }
+
+    button{
+        margin-left: 43%;
+        margin-right: 50%;
+        width: 150px;
+        height: 50px;
+        border-radius: 10px;
+        font-family: 'fulbo';
+        border: 2px solid #0575ff;
+    }
+</style>
