@@ -39,9 +39,6 @@ def add_string_child(text_code : list[str]) -> list[str]:
     return processing_str_code(new_code)
 
 
-# def create_array():
-
-
 def create_var() -> str:
     '''Функция для явного задания типа переменной на синтаксисе Pascal'''
     var_sp = []
@@ -59,6 +56,39 @@ def create_var() -> str:
     return f'Var\n{vars}'
 
 
+
+def get_var_type(code):
+    '''Функция определения типа переменной'''
+    if isinstance(code, ast.BinOp):
+        left_type = get_var_type(code.left)
+        right_type = get_var_type(code.right)
+
+        if left_type == int and right_type == int:
+            return int
+        
+    elif isinstance(code, ast.Call):
+        func = get_var_type(code.func)
+        
+        if func == 'int':
+            return int
+        elif func == 'input':
+            return str
+        elif func == 'float':
+            return float
+    
+    elif isinstance(code, ast.Name):
+        return code.id
+
+    elif isinstance(code, ast.Constant):
+        if type(code.value) == int:
+            return int
+        
+        elif type(code.value) == str:
+            return str
+        
+        return 'Unknown'
+
+
 def convert_to_Pascal(code):
     '''Функция конвертации кода в Pascal'''
     if isinstance(code, ast.Module):
@@ -71,13 +101,16 @@ def convert_to_Pascal(code):
         value = convert_to_Pascal(code.value)
 
         if value == 'input':
+            Structure_dct[targets] = get_var_type(code.value)
             return f'\nReadln({targets});'
+
         elif type(value) == list:
             Array_struct[targets] = value
             Structure_dct[targets] = type(value)
             return ''
+        
         else:
-            Structure_dct[targets] = type(value)
+            Structure_dct[targets] = get_var_type(code.value)
             return f'\n{targets} := {value};'
 
     # Конвертация For
@@ -130,7 +163,7 @@ def convert_to_Pascal(code):
             if i in Structure_dct:
                 elems.append(i)
             else:
-                elems.append(f'"{i}"')
+                elems.append(f"'{i}'")
 
         return f'\nWriteln({', '.join(elems)});'
 
@@ -139,7 +172,7 @@ def convert_to_Pascal(code):
         # Определение функции
         func = convert_to_Pascal(code.func)
         
-        if func == 'input':
+        if func == 'input' or func == 'int':
             return 'input'
         else:
             return [convert_to_Pascal(arg) for arg in code.args]
@@ -169,6 +202,7 @@ def convert_to_Pascal(code):
     elif isinstance(code, ast.Constant):
         return code.value
     
+    
 
 def convert_code_line(new_code):
     '''Функция для преобразования каждой строки в код pascal'''
@@ -176,8 +210,8 @@ def convert_code_line(new_code):
 
     for i in range(len(new_code)):
         tree = ast.parse(new_code[i])
-        # print(ast.dump(tree, indent=5))
-        code_lines.append(convert_to_Pascal(tree))
+        print(ast.dump(tree, indent=5))
+        # code_lines.append(convert_to_Pascal(tree))
     
     vars = create_var()
 
