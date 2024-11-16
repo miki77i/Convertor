@@ -52,13 +52,19 @@ def create_var() -> str:
         else:
             var_sp.append(f'{var} : {Var_type.get(type_, None)};')
 
-    vars = '\n'.join(var_sp)
-    return f'Var\n{vars}'
+    if len(var_sp) > 0:
+        vars = '\n'.join(var_sp)
+        return f'Var\n{vars}'
+    return ''
 
 
 
 def get_var_type(code):
     '''Функция определения типа переменной'''
+    if isinstance(code, ast.Return):
+        if get_var_type(code.value) == int:
+            return int
+
     if isinstance(code, ast.BinOp):
         left_type = get_var_type(code.left)
         right_type = get_var_type(code.right)
@@ -87,6 +93,11 @@ def get_var_type(code):
             return str
         
         return 'Unknown'
+
+
+def get_function(code):
+    '''Функция для инициализации функции Pascal'''  
+    return convert_to_Pascal(code)
 
 
 def convert_to_Pascal(code):
@@ -119,12 +130,13 @@ def convert_to_Pascal(code):
         target = convert_to_Pascal(code.target)
         start, stop = convert_to_Pascal(code.iter)
         Structure_dct[target] = type(start)
-
+        
         # Тело цикла
         elements = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
         body = '\nbegin' + elements + '\nend'
-
-        return f'\nfor {target} := {start} to {stop} do' + body
+        if int(start) < int(stop):
+            return f'\nfor {target} := {start} to {stop} do' + body
+        return f'\nfor {target} := {start} downto {stop} do' + body
     
     # Конвертация While
     elif isinstance(code, ast.While):
@@ -134,21 +146,30 @@ def convert_to_Pascal(code):
 
     # Конвертация If
     elif isinstance(code, ast.If):
+       
         test = convert_to_Pascal(code.test) 
         body = '\n'.join([convert_to_Pascal(elem) for elem in code.body])
         else_ = ''
 
         if code.orelse != []:
-            else_ = '\n'.join([convert_to_Pascal(elem) for elem in code.orelse])
-            else_ = f'\nElse begin {else_} \nend' 
+            if len(code.orelse) == 1:
+                else_ = convert_to_Pascal(code.orelse[0]) 
+            else:
+                else_ = '\n'.join([convert_to_Pascal(elem) for elem in code.orelse])
+            else_ = f'\nElse\nbegin \n{else_} \nend' 
         
-        return f'\nIf {test} then\n' + 'begin' + body + '\nend' + else_
+        return f'\nIf {test} then\n' + 'begin\n' + body + '\nend' + else_
+    
     
     elif isinstance(code, ast.FunctionDef):
         def_name = code.name
-        args = [convert_to_Pascal(arg) for arg in code.args]
-        body = convert_to_Pascal(code.body)
-        return f''
+        args = convert_to_Pascal(code.args)
+        body = '\n'.join([convert_to_Pascal(arg) for arg in code.body])
+        return f'function {def_name}({','.join([arg + ':Integer' for arg in args])}) of Integer;\nbegin\n{body}\nend;'
+
+    elif isinstance(code, ast.Return):
+        ret = convert_to_Pascal(code.value)
+        return f'{ret}'
 
     # Математические операции
     elif isinstance(code, ast.BinOp):
@@ -195,6 +216,13 @@ def convert_to_Pascal(code):
         
         return f'{left} {ops} {right}'
     
+    elif isinstance(code, ast.arguments):
+
+        return [convert_to_Pascal(arg) for arg in code.args]
+    
+    elif isinstance(code, ast.arg):
+        return code.arg
+    
     #Получение списка элементов
     elif isinstance(code, ast.List):
         elems = [convert_to_Pascal(elem) for elem in code.elts]
@@ -216,14 +244,23 @@ def convert_to_Pascal(code):
 
 def convert_code_line(new_code):
     '''Функция для преобразования каждой строки в код pascal'''
+    Structure_dct.clear()
+    Array_struct.clear()
     code_lines = []
+    function_lines = []
 
     for i in range(len(new_code)):
         tree = ast.parse(new_code[i])
-        # print(ast.dump(tree, indent=5))
-        code_lines.append(convert_to_Pascal(tree))
+        print(ast.dump(tree, indent=5))
+
+        if 'def' in new_code[i]:
+            function_lines.append(convert_to_Pascal(tree))
+        else:
+            code_lines.append(convert_to_Pascal(tree))  
     
     vars = create_var()
 
     # print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")
-    return f"{vars} \nbegin\n {''.join(code_lines)} \nend."
+    if vars == '':
+        return f"{''.join(function_lines)}\nbegin\n {''.join(code_lines)} \nend."
+    return f"{''.join(function_lines)}\n{vars} \nbegin {''.join(code_lines)} \nend."

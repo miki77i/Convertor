@@ -1,5 +1,6 @@
-for i in range(1, 20):
-    if i % 2 == 0:
-        print(i, ' is even')
+def add(a, b):
+    if a > 0:
+        return a + b
     else:
-        print(i, ' is not even')
+        return a - b
+    
