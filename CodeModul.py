@@ -77,43 +77,6 @@ def create_var(code_str) -> str:
     return ''
 
 
-
-# def get_var_type(code):
-#     '''Функция определения типа переменной'''
-#     if isinstance(code, ast.Return):
-#         if get_var_type(code.value) == int:
-#             return int
-
-#     if isinstance(code, ast.BinOp):
-#         left_type = get_var_type(code.left)
-#         right_type = get_var_type(code.right)
-
-#         if left_type == int and right_type == int:
-#             return int
-        
-#     elif isinstance(code, ast.Call):
-#         func = get_var_type(code.func)
-        
-#         if func == 'int':
-#             return int
-#         elif func == 'input':
-#             return str
-#         elif func == 'float':
-#             return float
-    
-#     elif isinstance(code, ast.Name):
-#         return code.id
-
-#     elif isinstance(code, ast.Constant):
-#         if type(code.value) == int:
-#             return int
-        
-#         elif type(code.value) == str:
-#             return str
-        
-#         return 'Unknown'
-
-
 def get_function(code):
     '''Функция для инициализации функции Pascal'''  
     return convert_to_Pascal(code)
