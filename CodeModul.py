@@ -9,6 +9,8 @@ bin_op = {ast.Add: "+", ast.Sub: '-', ast.Mult: '*', ast.Div : '/', ast.FloorDiv
 Var_type = {int : 'Integer', float : 'Real', str : 'String', bool : 'Boolean', list : 'array'}
 
 
+
+
 def processing_str_code(code : list[str]):
     '''Функция для обработки строк кода'''
     new_code = []
@@ -38,9 +40,26 @@ def add_string_child(text_code : list[str]) -> list[str]:
 
     return processing_str_code(new_code)
 
+def set_global_var(code_str):
+    '''Функция для определения всех глобальных переменных'''
+    def get_type_input(prompt=""):
+        return '1'
+    
+    global_var = {'input': get_type_input}
 
-def create_var() -> str:
+    exec(''.join(code_str), global_var)
+
+    user_global_var = {key : type(value)  for key, value in global_var.items() if not '__' in key}
+
+    user_global_var.pop('input')
+
+    Structure_dct.update(user_global_var)
+    
+    
+    
+def create_var(code_str) -> str:
     '''Функция для явного задания типа переменной на синтаксисе Pascal'''
+    set_global_var(code_str)
     var_sp = []
     for var, type_ in Structure_dct.items():
 
@@ -56,43 +75,6 @@ def create_var() -> str:
         vars = '\n'.join(var_sp)
         return f'Var\n{vars}'
     return ''
-
-
-
-def get_var_type(code):
-    '''Функция определения типа переменной'''
-    if isinstance(code, ast.Return):
-        if get_var_type(code.value) == int:
-            return int
-
-    if isinstance(code, ast.BinOp):
-        left_type = get_var_type(code.left)
-        right_type = get_var_type(code.right)
-
-        if left_type == int and right_type == int:
-            return int
-        
-    elif isinstance(code, ast.Call):
-        func = get_var_type(code.func)
-        
-        if func == 'int':
-            return int
-        elif func == 'input':
-            return str
-        elif func == 'float':
-            return float
-    
-    elif isinstance(code, ast.Name):
-        return code.id
-
-    elif isinstance(code, ast.Constant):
-        if type(code.value) == int:
-            return int
-        
-        elif type(code.value) == str:
-            return str
-        
-        return 'Unknown'
 
 
 def get_function(code):
@@ -112,7 +94,6 @@ def convert_to_Pascal(code):
         value = convert_to_Pascal(code.value)
 
         if value == 'input':
-            Structure_dct[targets] = get_var_type(code.value)
             return f'\nReadln({targets});'
 
         elif type(value) == list:
@@ -121,14 +102,19 @@ def convert_to_Pascal(code):
             return ''
         
         else:
-            Structure_dct[targets] = get_var_type(code.value)
             return f'\n{targets} := {value};'
 
     # Конвертация For
     elif isinstance(code, ast.For):
         # Переменные цикла
         target = convert_to_Pascal(code.target)
-        start, stop = convert_to_Pascal(code.iter)
+        iter = convert_to_Pascal(code.iter)
+        # Проверка на диапазон для for
+        if len(iter) == 1: 
+            start, stop = 0, iter[0]
+        else:
+            start, stop = iter
+
         Structure_dct[target] = type(start)
         
         # Тело цикла
@@ -228,6 +214,7 @@ def convert_to_Pascal(code):
         elems = [convert_to_Pascal(elem) for elem in code.elts]
         return elems
 
+    # Получение базовых эдементов
     #Получение имени аргумента функции
     elif isinstance(code, ast.arg):
         return code.arg
@@ -258,7 +245,7 @@ def convert_code_line(new_code):
         else:
             code_lines.append(convert_to_Pascal(tree))  
     
-    vars = create_var()
+    vars = create_var(''.join(new_code))
 
     # print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")
     if vars == '':
