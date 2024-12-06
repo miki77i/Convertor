@@ -57,8 +57,9 @@ def set_global_var(code_str):
     
     
     
-def create_var() -> str:
+def create_var(code_str) -> str:
     '''Функция для явного задания типа переменной на синтаксисе Pascal'''
+    set_global_var(code_str)
     var_sp = []
     for var, type_ in Structure_dct.items():
 
@@ -77,40 +78,40 @@ def create_var() -> str:
 
 
 
-def get_var_type(code):
-    '''Функция определения типа переменной'''
-    if isinstance(code, ast.Return):
-        if get_var_type(code.value) == int:
-            return int
+# def get_var_type(code):
+#     '''Функция определения типа переменной'''
+#     if isinstance(code, ast.Return):
+#         if get_var_type(code.value) == int:
+#             return int
 
-    if isinstance(code, ast.BinOp):
-        left_type = get_var_type(code.left)
-        right_type = get_var_type(code.right)
+#     if isinstance(code, ast.BinOp):
+#         left_type = get_var_type(code.left)
+#         right_type = get_var_type(code.right)
 
-        if left_type == int and right_type == int:
-            return int
+#         if left_type == int and right_type == int:
+#             return int
         
-    elif isinstance(code, ast.Call):
-        func = get_var_type(code.func)
+#     elif isinstance(code, ast.Call):
+#         func = get_var_type(code.func)
         
-        if func == 'int':
-            return int
-        elif func == 'input':
-            return str
-        elif func == 'float':
-            return float
+#         if func == 'int':
+#             return int
+#         elif func == 'input':
+#             return str
+#         elif func == 'float':
+#             return float
     
-    elif isinstance(code, ast.Name):
-        return code.id
+#     elif isinstance(code, ast.Name):
+#         return code.id
 
-    elif isinstance(code, ast.Constant):
-        if type(code.value) == int:
-            return int
+#     elif isinstance(code, ast.Constant):
+#         if type(code.value) == int:
+#             return int
         
-        elif type(code.value) == str:
-            return str
+#         elif type(code.value) == str:
+#             return str
         
-        return 'Unknown'
+#         return 'Unknown'
 
 
 def get_function(code):
@@ -281,7 +282,7 @@ def convert_code_line(new_code):
         else:
             code_lines.append(convert_to_Pascal(tree))  
     
-    vars = create_var()
+    vars = create_var(''.join(new_code))
 
     # print(f"{vars} \nbegin\n {''.join(code_lines)} \nend.")
     if vars == '':

@@ -10,13 +10,13 @@ with open('file.py', 'r+') as file:
 # Преобразование строк кода в блоки
 new_code = CodeModul.add_string_child(code_file)
 
-# print(new_code)
 
+# CodeModul.set_global_var(''.join(code_file))
 print(CodeModul.convert_code_line(new_code))
 
 # print(Structure_dct)
 # print(CodeModul.Structure_dct)
-CodeModul.set_global_var(''.join(code_file))
+
 
 from flask import Flask, render_template, request
 
